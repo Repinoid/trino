@@ -1,9 +1,8 @@
 package config
 
 import (
-	//	"emobile/internal/config"
 	"context"
-	"emobile/internal/models"
+	"triner/internal/models"
 	"fmt"
 	"os"
 	"strings"

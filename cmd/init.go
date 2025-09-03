@@ -1,8 +1,8 @@
 package main
 
 import (
-	"emobile/internal/config"
-	"emobile/internal/models"
+	"triner/internal/config"
+	"triner/internal/models"
 	"fmt"
 	"log"
 	"os"

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"emobile/internal/models"
+	"triner/internal/models"
 	"log"
 	"os"
 	"strconv"

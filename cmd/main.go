@@ -2,11 +2,6 @@ package main
 
 import (
 	"context"
-	"emobile/internal/config"
-	"emobile/internal/dbase"
-	"emobile/internal/handlera"
-	"emobile/internal/middlas"
-	"emobile/internal/models"
 	"flag"
 	"fmt"
 	"log"
@@ -17,21 +12,13 @@ import (
 	"syscall"
 	"time"
 
+	"triner/internal/config"
+	"triner/internal/dbase"
+	"triner/internal/models"
+
 	"github.com/gorilla/mux"
-	//	_ "github.com/swaggo/http-swagger"
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-// @title Subscription Service API
-// @version 1.0
-// @description API для управления подписками
-// main godoc
-// @Summary Запуск приложения
-// @Description Основная функция запуска сервиса подписок
-// @Produce json
-// @Param debug query boolean false "Включить debug-логирование" default(false)
-// @Success 200 {string} string "Сервис запущен"
-// @Failure 500 {string} string "Ошибка сервера"
 func main() {
 
 	ctx := context.Background()
@@ -44,23 +31,17 @@ func main() {
 
 }
 
-// Run godoc
-// @Summary Запуск сервера API
-// @Description Инициализирует конфигурацию и запускает HTTP-сервер с роутингом
-// @Accept json
-// @Produce json
-// @Param ctx query string false "Контекст выполнения"
-// @Success 200 {string} string "Сервер запущен"
-// @Failure 500 {string} string "Ошибка сервера"
 func Run(ctx context.Context) (err error) {
 
 	Level := slog.LevelInfo
+
 	// Если есть флаг -debug
 	debugFlag := flag.Bool("debug", false, "установка Минимального уровня логирования DEBUG")
 	flag.Parse()
 	if *debugFlag {
 		Level = slog.LevelDebug
 	}
+	
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level:     Level,
 		AddSource: true, // Добавлять информацию об исходном коде
@@ -84,32 +65,7 @@ func Run(ctx context.Context) (err error) {
 	}
 	defer postgres.Close()
 
-	db := &handlera.InterStruct{Inter: postgres}
-
 	router := mux.NewRouter()
-	router.HandleFunc("/", db.DBPinger).Methods("GET")
-	router.HandleFunc("/add", db.CreateHandler).Methods("POST")
-	router.HandleFunc("/read", db.ReadHandler).Methods("POST")
-	router.HandleFunc("/list", db.ListHandler).Methods("GET")
-	router.HandleFunc("/update", db.UpdateHandler).Methods("PUT")
-	router.HandleFunc("/delete", db.DeleteHandler).Methods("DELETE")
-	router.HandleFunc("/summa", db.SumHandler).Methods("POST")
-
-	// подключаем middleware логирования
-	router.Use(middlas.WithHTTPLogging)
-	router.Use(middlas.ErrorLoggerMiddleware)
-
-	router.HandleFunc("/swagger/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-		data, _ := os.ReadFile("./docs/swagger.json")
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
-	})
-
-	// Обработчик для Swagger UI
-	router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("/swagger/swagger.json"), // Указываем путь к JSON
-		httpSwagger.DocExpansion("none"),         // Опционально: схлопывать документацию
-	))
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
