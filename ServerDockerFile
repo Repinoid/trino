@@ -12,7 +12,7 @@ RUN go mod download
 
 # копируем server code в контейнер в /wd
 COPY internal internal 
-COPY cmd/app/*.go cmd/server/
+COPY cmd/*.go cmd/server/
 
 # меняем рабочую директорию на папку с кодом сервера 
 WORKDIR /wd/cmd/server
