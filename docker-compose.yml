@@ -71,3 +71,6 @@ networks:
   localnet:
     driver: bridge
     name: netto
+
+
+# docker exec -it dbcont psql -U usera dbname
