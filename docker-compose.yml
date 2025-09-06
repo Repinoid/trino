@@ -44,7 +44,7 @@ services:
 
   trino:
     image: trinodb/trino:latest
-    container_name: trino
+    container_name: tcont
     ports:
       - "8081:8080"
     environment:
