@@ -1,10 +1,10 @@
 package config
 
 import (
-	"triner/internal/models"
 	"log"
 	"os"
 	"strconv"
+	"triner/internal/models"
 
 	"github.com/joho/godotenv"
 )
@@ -22,10 +22,11 @@ type Config struct {
 
 var Configuration Config
 
-func Load() (Config, error) {
+func Load() (cfg Config, err error) {
 	// Загружаем .env файл
 	// Load will read your env file(s) and load them into ENV for this process.
-	err := godotenv.Load(models.EnvPath)
+	// models EnvPath = "./.env"
+	err = godotenv.Load(models.EnvPath)
 	// err := godotenv.Load("../../.env")
 	if err != nil {
 		dir, errd := os.Getwd()
@@ -54,7 +55,7 @@ func Load() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
-	cfg := Config{
+	cfg = Config{
 		DBUser:     GetEnv("DB_USER", "postgres"),
 		DBPassword: GetEnv("DB_PASSWORD", ""),
 		DBName:     GetEnv("DB_NAME", "postgres"),
@@ -67,7 +68,8 @@ func Load() (Config, error) {
 
 	// models.Logger.Info("Environment ", "vars", cfg)
 
-	return cfg, nil
+	return
+	//return cfg, nil
 }
 
 // GetEnv возвращает значение переменной окружения или значение по умолчанию

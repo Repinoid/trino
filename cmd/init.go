@@ -1,11 +1,11 @@
 package main
 
 import (
-	"triner/internal/config"
-	"triner/internal/models"
 	"fmt"
 	"log"
 	"os"
+	"triner/internal/config"
+	"triner/internal/models"
 )
 
 func init() {
@@ -26,7 +26,9 @@ func init() {
 		// если нет "MIGRATIONS_PATH" значит приложение запущено не в контейнере и хост localhost
 		cfg.DBHost = "localhost"
 	}
-
+	
+	// переменные в .env
+	// postgres://usera:secret@db:5432/dbname?sslmode=disable
 	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
@@ -34,6 +36,4 @@ func init() {
 
 	log.Println("DB ok", "DSN", models.DSN)
 
-	}
-
-	
+}
