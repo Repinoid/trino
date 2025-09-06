@@ -1,0 +1,15 @@
+docker exec trino trino --server localhost:8080 --execute "
+INSERT INTO postgres.public.subscriptions (
+    user_id, 
+    service_name, 
+ ) VALUES 
+(1, 'premium'),
+(2, 'basic')
+"
+
+
+docker exec -it dbcont psql -U usera -d dbname -c "SELECT * FROM subscriptions;"
+
+docker exec trino trino --server localhost:8080 --execute "SELECT * FROM postgres.public.subscriptions"
+
+docker exec -it dbcont psql -U usera -d dbname -c "\dt"
