@@ -18,6 +18,8 @@ import (
 	"triner/internal/models"
 
 	"github.com/gorilla/mux"
+
+	_ "github.com/trinodb/trino-go-client/trino"
 )
 
 func main() {
