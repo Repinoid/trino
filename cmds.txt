@@ -1,15 +1,33 @@
-docker exec trino trino --server localhost:8080 --execute "
-INSERT INTO postgres.public.subscriptions (
-    user_id, 
-    service_name, 
- ) VALUES 
-(1, 'premium'),
-(2, 'basic')
+docker exec tcont trino --server localhost:8080 --execute "
+INSERT INTO postgres.public.tabl (name) VALUES 
+('premium'),
+('basic')
 "
 
 
-docker exec -it dbcont psql -U usera -d dbname -c "SELECT * FROM subscriptions;"
+docker exec -it dbcont psql -U usera -d dbname -c "SELECT * FROM tabl;"
 
-docker exec trino trino --server localhost:8080 --execute "SELECT * FROM postgres.public.subscriptions"
+docker exec tcont trino --server localhost:8080 --execute "SELECT * FROM postgres.public.tabl"
 
 docker exec -it dbcont psql -U usera -d dbname -c "\dt"
+
+DSN для подключения к Trino:
+dsn := "http://trino@trino:8080?catalog=postgresql&schema=public"
+Использование:
+
+db, err := sql.Open("trino", "http://trino@trino:8080?catalog=postgresql&schema=public")
+
+
+func testConnection(dsn string) error {
+    db, err := sql.Open("trino", dsn)
+    if err != nil {
+        return err
+    }
+    defer db.Close()
+    
+    // Быстрая проверка
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+    
+    return db.PingContext(ctx)
+}

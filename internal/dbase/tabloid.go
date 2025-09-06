@@ -42,8 +42,8 @@ func (dataBase *DBstruct) Close() {
 	dataBase.DB.Close()
 }
 
-func Ping(ctx context.Context) error {
-	dataBase, err := NewPostgresPool(ctx, models.DSN)
+func Ping(ctx context.Context, DSN string) error {
+	dataBase, err := NewPostgresPool(ctx, DSN)
 	if err != nil {
 		return err
 	}

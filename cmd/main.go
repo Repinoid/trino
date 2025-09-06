@@ -14,9 +14,12 @@ import (
 
 	"triner/internal/config"
 	"triner/internal/dbase"
+	"triner/internal/handlera"
 	"triner/internal/models"
 
 	"github.com/gorilla/mux"
+
+	_ "github.com/trinodb/trino-go-client/trino"
 )
 
 func main() {
@@ -41,7 +44,7 @@ func Run(ctx context.Context) (err error) {
 	if *debugFlag {
 		Level = slog.LevelDebug
 	}
-	
+
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level:     Level,
 		AddSource: true, // Добавлять информацию об исходном коде
@@ -53,6 +56,7 @@ func Run(ctx context.Context) (err error) {
 	err = config.InitMigration(ctx, config.Configuration)
 	if err != nil {
 		//для отладки, спит 900 секунд - время для инспекции контейнера приложения, docker exec -it sapp sh
+		models.Logger.Error("Migration", "error", err)
 		models.Logger.Info("sleep ...", "config", config.Configuration)
 		time.Sleep(900 * time.Second)
 		return
@@ -66,6 +70,8 @@ func Run(ctx context.Context) (err error) {
 	defer postgres.Close()
 
 	router := mux.NewRouter()
+
+	router.HandleFunc("/", handlera.DBPinger).Methods("GET")
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
