@@ -1,76 +1,72 @@
-services:
-  # pgadmin:
-  #   image: dpage/pgadmin4:latest
-  #   container_name: pgadmin
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: a@e.com
-  #     PGADMIN_DEFAULT_PASSWORD: admpass
-  #   volumes:
-  #     - pgadmin_data:/var/lib/pgadmin
-  #   ports:
-  #     - "8088:80"
-  #   depends_on:
-  #     - db
-  #   networks:
-  #     - localnet
 
+services:
   db:
     image: postgres:17
     container_name: dbcont
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER:-usera}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-pass}
+      - POSTGRES_DB=${DB_NAME:-dbname}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # - ./pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
     ports:
       - "5432:5432"
     restart: unless-stopped
     networks:
       - localnet
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-usera} -d ${DB_NAME:-dbname}" ]
       interval: 5s
       timeout: 5s
       retries: 10
 
   app:
     container_name: tapp
-    # build:
-    #   # путь до докерфайла
-    #   context: ./
-    #   # докерфайл
-    #   dockerfile: ServerDockerFile
     image: tapp:1
     ports:
       - "8080:8080"
     environment:
       MIGRATIONS_PATH: "file://migrations"
-      BASE_HOST: db
-      DB_HOST: ${DB_HOST}
+      DB_HOST: db
       DB_PORT: 5432
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      APP_HOST: ${APP_HOST} #         "0.0.0.0" # Сервер будет слушать все интерфейсы
-
+      DB_USER: ${DB_USER:-usera}
+      DB_PASSWORD: ${DB_PASSWORD:-pass}
+      DB_NAME: ${DB_NAME:-dbname}
+      APP_HOST: ${APP_HOST:-0.0.0.0}
     depends_on:
       db:
         condition: service_healthy
+      trino:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - localnet
+
+  trino:
+    image: trinodb/trino:latest
+    container_name: trino-cont
+    ports:
+      - "8081:8080"
+    environment:
+      - JVM_MAX_HEAP_SIZE=2G
+    volumes:
+      - ./trino-config:/etc/trino
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
     networks:
       - localnet
 
 volumes:
   postgres_data:
-  pgadmin_data:
-
 
 networks:
   localnet:
     driver: bridge
     name: netto
-
-
-# docker exec -it dbcont psql -U usera dbname
