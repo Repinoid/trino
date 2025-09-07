@@ -53,15 +53,6 @@ func Run(ctx context.Context) (err error) {
 	slog.SetDefault(models.Logger)
 	models.Logger.Debug("Log", "level", Level)
 
-	err = config.InitMigration(ctx, config.Configuration)
-	if err != nil {
-		//для отладки, спит 900 секунд - время для инспекции контейнера приложения, docker exec -it sapp sh
-		models.Logger.Error("Migration", "error", err)
-		models.Logger.Info("sleep ...", "config", config.Configuration)
-		time.Sleep(900 * time.Second)
-		return
-	}
-
 	postgres, err := dbase.NewPostgresPool(context.Background(), models.DSN)
 	if err != nil {
 		log.Fatalln("NewPostgresPool", "fault", err)

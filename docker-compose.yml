@@ -9,6 +9,10 @@ services:
       - POSTGRES_DB=${DB_NAME:-dbname}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgresql/postgresql.conf:/etc/postgresql.conf  # Монтирование кастомного конфига
+      - ./postgresql/pg_hba.conf:/etc/pg_hba.conf
+      - ./pg_logs:/var/log/postgresql 
+    command: ["postgres", "-c", "config_file=/etc/postgresql.conf", "-c", "hba_file=/etc/pg_hba.conf"]
     ports:
       - "5432:5432"
     restart: unless-stopped
@@ -69,4 +73,4 @@ volumes:
 networks:
   localnet:
     driver: bridge
-    name: netto
+    # name: netto

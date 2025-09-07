@@ -80,11 +80,6 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
-	err = config.InitMigration(suite.ctx, cfg)
-	if err != nil {
-		return
-	}
-
 	//	suite.DBEndPoint = fmt.Sprintf("postgres://testuser:testpass@%s:%s/testdb", host, port.Port())
 	suite.postgresContainer = postgresContainer
 	models.Logger.Debug("PostgreSQL", "", host, ":", port.Port())
