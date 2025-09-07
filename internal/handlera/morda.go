@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"triner/internal/dbase"
 	"triner/internal/models"
+
+	"github.com/gorilla/mux"
 )
 
 func DBPinger(rwr http.ResponseWriter, req *http.Request) {
@@ -40,4 +42,24 @@ func TrinoPinger(rwr http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(rwr, `{"trinoPing":"StatusOK"}`)
 
 	// return db.PingContext(ctx)
+}
+
+func AddNameHandler(rwr http.ResponseWriter, req *http.Request) {
+	rwr.Header().Set("Content-Type", "text/html")
+	vars := mux.Vars(req)
+	name := vars["name"]
+
+	dsn := "http://trino@trino:8080?catalog=postgresql&schema=public"
+	db, err := sql.Open("trino", dsn)
+	if err != nil {
+		rwr.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(rwr, `{"Error":"%v"}`, err)
+		return
+
+	}
+	defer db.Close()
+
+	err = dbase.AddNameToTable(req.Context(), db, name)
+	
+
 }

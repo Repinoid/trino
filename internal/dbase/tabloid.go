@@ -2,6 +2,7 @@ package dbase
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -55,4 +56,24 @@ func Ping(ctx context.Context, DSN string) error {
 		return fmt.Errorf("no ping %w", err)
 	}
 	return nil
+}
+
+func (dataBase *DBstruct) CreateTable(ctx context.Context) (err error) {
+
+	order := `
+		CREATE TABLE IF NOT EXISTS tabl (
+    		id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    		name VARCHAR(64) NOT NULL
+		);    
+	`
+	_, err = dataBase.DB.Exec(ctx, order)
+
+	return
+}
+
+func AddNameToTable(ctx context.Context, db *sql.DB, name string) (err error) {
+	order := "INSERT INTO postgres.public.tabl (name) VALUES ('$1');"
+	_, err = db.Exec(order, name)
+
+	return
 }

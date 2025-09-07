@@ -53,17 +53,23 @@ func Run(ctx context.Context) (err error) {
 	slog.SetDefault(models.Logger)
 	models.Logger.Debug("Log", "level", Level)
 
-	postgres, err := dbase.NewPostgresPool(context.Background(), models.DSN)
+	postgresDB, err := dbase.NewPostgresPool(ctx, models.DSN)
 	if err != nil {
 		log.Fatalln("NewPostgresPool", "fault", err)
 		return
 	}
-	defer postgres.Close()
+	defer postgresDB.Close()
+
+	err = postgresDB.CreateTable(ctx)
+	if err != nil {
+		return
+	}
 
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", handlera.DBPinger).Methods("GET")
 	router.HandleFunc("/t", handlera.TrinoPinger).Methods("GET")
+	router.HandleFunc("/add/{name}", handlera.AddNameHandler).Methods("GET")
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
