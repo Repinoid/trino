@@ -17,6 +17,8 @@ type DBstruct struct {
 	//	DB *pgx.Conn
 }
 
+
+
 func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 
 	poolConfig, err := pgxpool.ParseConfig(DSN)
@@ -39,6 +41,9 @@ func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 	return &DBstruct{DB: pool}, nil
 }
 
+// (p *pgxpool.Pool) Close()
+// Close closes all connections in the pool and rejects future Acquire calls. 
+// Blocks until all connections are returned to pool and closed.
 func (dataBase *DBstruct) Close() {
 	dataBase.DB.Close()
 }

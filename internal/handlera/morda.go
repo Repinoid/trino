@@ -2,6 +2,7 @@ package handlera
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"triner/internal/dbase"
@@ -9,6 +10,10 @@ import (
 
 	"github.com/gorilla/mux"
 )
+
+type TrinoBaseStruct struct {
+	DB *sql.DB
+}
 
 func DBPinger(rwr http.ResponseWriter, req *http.Request) {
 
@@ -22,44 +27,65 @@ func DBPinger(rwr http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(rwr, `{"status":"StatusOK"}`)
 }
 
-func TrinoPinger(rwr http.ResponseWriter, req *http.Request) {
+func (db *TrinoBaseStruct) TrinoPinger(rwr http.ResponseWriter, req *http.Request) {
 
-	dsn := "http://trino@trino:8080?catalog=postgresql&schema=public"
-	db, err := sql.Open("trino", dsn)
+	// dsn := "http://trino@trino:8080?catalog=postgresql&schema=public"
+	// db, err := sql.Open("trino", dsn)
+	// if err != nil {
+	// 	rwr.WriteHeader(http.StatusInternalServerError)
+	// 	fmt.Fprintf(rwr, `{"Error":"%v"}`, err)
+	// 	return
+
+	// }
+	// defer db.Close()
+
+	status := http.StatusOK
+
+	err := db.DB.PingContext(req.Context())
 	if err != nil {
-		rwr.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(rwr, `{"Error":"%v"}`, err)
-		return
-
+		status = http.StatusInternalServerError
 	}
-	defer db.Close()
+	rwr.WriteHeader(status)
+	ret := struct {
+		Name   string
+		Status int
+		Err    error
+	}{Name: "Ping", Status: status, Err: err}
+	json.NewEncoder(rwr).Encode(ret)
 
+	
 	// Быстрая проверка
 	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	// defer cancel()
 
-	rwr.WriteHeader(http.StatusOK)
-	fmt.Fprintf(rwr, `{"trinoPing":"StatusOK"}`)
-
-	// return db.PingContext(ctx)
 }
 
-func AddNameHandler(rwr http.ResponseWriter, req *http.Request) {
+func (db *TrinoBaseStruct) AddNameHandler(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "text/html")
 	vars := mux.Vars(req)
 	name := vars["name"]
 
-	dsn := "http://trino@trino:8080?catalog=postgresql&schema=public"
-	db, err := sql.Open("trino", dsn)
+	// dsn := "http://trino@trino:8080?catalog=postgresql&schema=public"
+	// db, err := sql.Open("trino", dsn)
+	// if err != nil {
+	// 	rwr.WriteHeader(http.StatusInternalServerError)
+	// 	fmt.Fprintf(rwr, `{"Error":"%v"}`, err)
+	// 	return
+
+	// }
+	// defer db.Close()
+
+	status := http.StatusOK
+
+	err := dbase.AddNameToTable(req.Context(), db.DB, name)
 	if err != nil {
-		rwr.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(rwr, `{"Error":"%v"}`, err)
-		return
-
+		status = http.StatusInternalServerError
 	}
-	defer db.Close()
-
-	err = dbase.AddNameToTable(req.Context(), db, name)
-	
-
+	rwr.WriteHeader(status)
+	ret := struct {
+		Name   string
+		Status int
+		Err    error
+	}{Name: name, Status: status, Err: err}
+	json.NewEncoder(rwr).Encode(ret)
 }

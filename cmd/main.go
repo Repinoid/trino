@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
@@ -53,23 +54,37 @@ func Run(ctx context.Context) (err error) {
 	slog.SetDefault(models.Logger)
 	models.Logger.Debug("Log", "level", Level)
 
+	// открыть постгрес-базу, пингануть ************************************
 	postgresDB, err := dbase.NewPostgresPool(ctx, models.DSN)
 	if err != nil {
-		log.Fatalln("NewPostgresPool", "fault", err)
+		models.Logger.Error("NewPostgresPool", "fault", err)
 		return
 	}
-	defer postgresDB.Close()
-
+	// создать таблицу
 	err = postgresDB.CreateTable(ctx)
 	if err != nil {
 		return
 	}
+	postgresDB.Close()
+	// закрыть базу *********************************************************
+
+	dsn := "http://trino@trino:8080?catalog=postgresql&schema=public"
+	// sql.Open(driverName string, dataSourceName string) (*sql.DB, error)
+	trinoDB, err := sql.Open("trino", dsn)
+	if err != nil {
+		models.Logger.Error("trinoDB", "fault", err)
+		return
+	}
+	defer trinoDB.Close()
 
 	router := mux.NewRouter()
 
+	tbs := handlera.TrinoBaseStruct{DB: trinoDB}
+
 	router.HandleFunc("/", handlera.DBPinger).Methods("GET")
-	router.HandleFunc("/t", handlera.TrinoPinger).Methods("GET")
-	router.HandleFunc("/add/{name}", handlera.AddNameHandler).Methods("GET")
+	router.HandleFunc("/t", tbs.TrinoPinger).Methods("GET")
+	router.HandleFunc("/add/{name}", tbs.AddNameHandler).Methods("GET")
+	// router.HandleFunc("/get", handlera.GetNames).Methods("GET")
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
