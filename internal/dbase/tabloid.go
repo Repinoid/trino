@@ -17,8 +17,6 @@ type DBstruct struct {
 	//	DB *pgx.Conn
 }
 
-
-
 func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 
 	poolConfig, err := pgxpool.ParseConfig(DSN)
@@ -42,7 +40,7 @@ func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 }
 
 // (p *pgxpool.Pool) Close()
-// Close closes all connections in the pool and rejects future Acquire calls. 
+// Close closes all connections in the pool and rejects future Acquire calls.
 // Blocks until all connections are returned to pool and closed.
 func (dataBase *DBstruct) Close() {
 	dataBase.DB.Close()
@@ -77,8 +75,39 @@ func (dataBase *DBstruct) CreateTable(ctx context.Context) (err error) {
 }
 
 func AddNameToTable(ctx context.Context, db *sql.DB, name string) (err error) {
-	order := "INSERT INTO postgres.public.tabl (name) VALUES ('$1');"
+	order := "INSERT INTO postgres.public.tabl (name) VALUES (?)"
 	_, err = db.Exec(order, name)
+
+	return
+}
+
+type Names struct {
+	Id int
+	Name string
+}
+
+func GetNamesFromTable(ctx context.Context, db *sql.DB) (nms []Names, err error) {
+	order := "SELECT id, name from postgres.public.tabl"
+
+	rows, err := db.Query(order)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	//nms := []Names{}
+	for rows.Next() {
+		nm := Names{}
+		
+		err = rows.Scan(&nm.Id, &nm.Name)
+		if err != nil {
+			return nil, err
+		}
+		nms = append(nms, nm)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
 	return
 }

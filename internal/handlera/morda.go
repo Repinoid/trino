@@ -29,16 +29,6 @@ func DBPinger(rwr http.ResponseWriter, req *http.Request) {
 
 func (db *TrinoBaseStruct) TrinoPinger(rwr http.ResponseWriter, req *http.Request) {
 
-	// dsn := "http://trino@trino:8080?catalog=postgresql&schema=public"
-	// db, err := sql.Open("trino", dsn)
-	// if err != nil {
-	// 	rwr.WriteHeader(http.StatusInternalServerError)
-	// 	fmt.Fprintf(rwr, `{"Error":"%v"}`, err)
-	// 	return
-
-	// }
-	// defer db.Close()
-
 	status := http.StatusOK
 
 	err := db.DB.PingContext(req.Context())
@@ -53,7 +43,6 @@ func (db *TrinoBaseStruct) TrinoPinger(rwr http.ResponseWriter, req *http.Reques
 	}{Name: "Ping", Status: status, Err: err}
 	json.NewEncoder(rwr).Encode(ret)
 
-	
 	// Быстрая проверка
 	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	// defer cancel()
@@ -64,16 +53,6 @@ func (db *TrinoBaseStruct) AddNameHandler(rwr http.ResponseWriter, req *http.Req
 	rwr.Header().Set("Content-Type", "text/html")
 	vars := mux.Vars(req)
 	name := vars["name"]
-
-	// dsn := "http://trino@trino:8080?catalog=postgresql&schema=public"
-	// db, err := sql.Open("trino", dsn)
-	// if err != nil {
-	// 	rwr.WriteHeader(http.StatusInternalServerError)
-	// 	fmt.Fprintf(rwr, `{"Error":"%v"}`, err)
-	// 	return
-
-	// }
-	// defer db.Close()
 
 	status := http.StatusOK
 
@@ -88,4 +67,20 @@ func (db *TrinoBaseStruct) AddNameHandler(rwr http.ResponseWriter, req *http.Req
 		Err    error
 	}{Name: name, Status: status, Err: err}
 	json.NewEncoder(rwr).Encode(ret)
+}
+
+func (db *TrinoBaseStruct) GetNamesHandler(rwr http.ResponseWriter, req *http.Request) {
+
+	status := http.StatusOK
+
+	nms, err := dbase.GetNamesFromTable(req.Context(), db.DB)
+	if err != nil {
+		rwr.WriteHeader(status)
+		status = http.StatusInternalServerError
+		json.NewEncoder(rwr).Encode(err)
+		return
+	}
+	rwr.WriteHeader(status)
+
+	json.NewEncoder(rwr).Encode(nms)
 }

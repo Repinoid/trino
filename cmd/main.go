@@ -84,7 +84,7 @@ func Run(ctx context.Context) (err error) {
 	router.HandleFunc("/", handlera.DBPinger).Methods("GET")
 	router.HandleFunc("/t", tbs.TrinoPinger).Methods("GET")
 	router.HandleFunc("/add/{name}", tbs.AddNameHandler).Methods("GET")
-	// router.HandleFunc("/get", handlera.GetNames).Methods("GET")
+	router.HandleFunc("/get", tbs.GetNamesHandler).Methods("GET")
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
