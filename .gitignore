@@ -1,0 +1,9 @@
+# .env
+bin/
+*.log
+*.sqlite
+vendor/
+cmds.txt
+.vscode/
+*.log
+pg_logs/
