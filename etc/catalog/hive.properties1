@@ -2,6 +2,6 @@ connector.name=hive
 hive.metastore.uri=thrift://metastore:9083  # If using Hive Metastore; omit if not
 hive.s3.aws-access-key=admin
 hive.s3.aws-secret-key=password
-hive.s3.endpoint=http://minio:9000
+# hive.s3.endpoint=http://minio:9000
 hive.s3.path-style-access=true
 hive.s3.ssl.enabled=false

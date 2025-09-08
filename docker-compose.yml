@@ -53,7 +53,7 @@ services:
     environment:
       - JVM_MAX_HEAP_SIZE=1G
     volumes:
-      - ./trino-config:/etc/trino
+      - ./etc:/etc/trino
     depends_on:
       db:
         condition: service_healthy
