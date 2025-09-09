@@ -124,7 +124,7 @@ services:
 
 volumes:
   postgres_data:
-  postgres_logs:
+  # postgres_logs:
   minio_data:
 
 networks:

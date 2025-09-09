@@ -75,7 +75,7 @@ func (dataBase *DBstruct) CreateTable(ctx context.Context) (err error) {
 }
 
 func AddNameToTable(ctx context.Context, db *sql.DB, name string) (err error) {
-	order := "INSERT INTO postgres.public.tabl (name) VALUES (?)"
+	order := "INSERT INTO postgres.public.tabl (name) VALUES (?) /* order_comment */"
 	_, err = db.Exec(order, name)
 
 	return
