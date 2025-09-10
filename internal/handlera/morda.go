@@ -75,8 +75,8 @@ func (db *TrinoBaseStruct) GetNamesHandler(rwr http.ResponseWriter, req *http.Re
 
 	nms, err := dbase.GetNamesFromTable(req.Context(), db.DB)
 	if err != nil {
-		rwr.WriteHeader(status)
 		status = http.StatusInternalServerError
+		rwr.WriteHeader(status)
 		json.NewEncoder(rwr).Encode(err)
 		return
 	}
