@@ -1,6 +1,5 @@
 services:
   db:
-    user: "999:999"
     image: postgres:17
     container_name: dbcont
     environment:
@@ -25,7 +24,6 @@ services:
       retries: 10
 
   app:
-    user: "999:999"
     container_name: tapp
     image: tapp:1
     ports:
@@ -71,19 +69,38 @@ services:
       - localnet
 
   hive-metastore:
+    # image: apache/hive:3.1.2
     image: 'bitsondatadev/hive-metastore:latest'
-    hostname: hive-metastore
     container_name: hive
-    ports:
-      - '9083:9083' # Metastore Thrift
-    volumes:
-      - ./conf/metastore-site.xml:/opt/apache-hive-metastore-3.0.0-bin/conf/metastore-site.xml:ro
-    environment:
-      METASTORE_DB_HOSTNAME: db
     depends_on:
       - db
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-dbname}
+      DB_USER: ${DB_USER:-usera}
+      DB_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      - "9083:9083"
     networks:
       - localnet
+
+
+  # hive-metastore:
+  #   image: 'bitsondatadev/hive-metastore:latest'
+  #   hostname: hive-metastore
+  #   container_name: hive
+  #   ports:
+  #     - '9083:9083' # Metastore Thrift
+  #   volumes:
+  #     - ./conf/metastore-site.xml:/opt/apache-hive-metastore-3.0.0-bin/conf/metastore-site.xml:ro
+  #   environment:
+  #     METASTORE_DB_HOSTNAME: db
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - localnet
 
   minio:
     image: 'minio/minio:latest'
