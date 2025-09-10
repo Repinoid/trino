@@ -67,6 +67,8 @@ func (db *TrinoBaseStruct) AddNameHandler(rwr http.ResponseWriter, req *http.Req
 		Err    error
 	}{Name: name, Status: status, Err: err}
 	json.NewEncoder(rwr).Encode(ret)
+
+	models.Logger.Info("Name added", name, ret)
 }
 
 func (db *TrinoBaseStruct) GetNamesHandler(rwr http.ResponseWriter, req *http.Request) {
@@ -83,4 +85,5 @@ func (db *TrinoBaseStruct) GetNamesHandler(rwr http.ResponseWriter, req *http.Re
 	rwr.WriteHeader(status)
 
 	json.NewEncoder(rwr).Encode(nms)
+	models.Logger.Info("Zapros")
 }

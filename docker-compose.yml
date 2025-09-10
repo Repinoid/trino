@@ -39,7 +39,7 @@ services:
       DB_NAME: ${DB_NAME:-dbname}
       APP_HOST: ${APP_HOST:-0.0.0.0}
     volumes:
-      - ./pg_logs:/plogs:ro      
+      - ./pg_logs:/plogs      
     depends_on:
       db:
         condition: service_healthy

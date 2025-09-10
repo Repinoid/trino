@@ -86,6 +86,7 @@ func Run(ctx context.Context) (err error) {
 	router.HandleFunc("/add/{name}", tbs.AddNameHandler).Methods("GET")
 	router.HandleFunc("/get", tbs.GetNamesHandler).Methods("GET")
 	router.HandleFunc("/log", handlera.ReadPostgresLog).Methods("GET")
+	router.HandleFunc("/del", handlera.DeleteLogFile).Methods("GET")
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)

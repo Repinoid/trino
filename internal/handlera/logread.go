@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"triner/internal/models"
 )
 
 func ReadPostgresLog(rwr http.ResponseWriter, req *http.Request) {
@@ -15,17 +16,54 @@ func ReadPostgresLog(rwr http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(rwr).Encode(err)
 		return
 	}
+	rwr.WriteHeader(http.StatusOK)
 	strs := strings.Split(string(content), "\n")
 	out := []string{}
+	pref := ">>>>>LOG:"
+	prefDetail := ">>>>>DETAIL:"
+	suff := "/*KUERY"
+
 	for _, s := range strs {
-		iBegin := strings.Index(s, ">>>>")
-		iEnd := strings.Index(s, "KUERY")
-		if iBegin == -1 || iEnd == -1 {
+		iBegin := strings.Index(s, pref)
+		iBeginDetail := strings.Index(s, prefDetail)
+		iEnd := strings.Index(s, suff)
+		if (iBegin == -1 || iEnd == -1) && iBeginDetail == -1 {
 			continue
 		}
-		kusman := s[iBegin : iEnd+5]
+		kusman := ""
+		if iBeginDetail == -1 {
+			kusman = strings.TrimSpace(s[iBegin+len(pref) : iEnd])
+		} else {
+			kusman = strings.TrimSpace(s[iBeginDetail+len(prefDetail):])
+		}
 		out = append(out, kusman)
-		fmt.Fprintf(rwr, "%s-----\n", kusman)
 	}
+
+	if len(out) == 0 {
+		fmt.Fprint(rwr, "No Trino queries yet \n\n")
+	}
+
+	for _, s := range out {
+		fmt.Fprintf(rwr, "%s\n\n", s)
+	}
+	models.Logger.Info("ReadPostgresLog", "queries", len(out))
+
+}
+
+func DeleteLogFile(rwr http.ResponseWriter, req *http.Request) {
+	err := os.Truncate("/plogs/p.log", 0)
+	if err != nil {
+		rwr.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(rwr).Encode(err)
+		return
+	}
+	rwr.WriteHeader(http.StatusOK)
+	ret := struct {
+		FName string
+		Mess  string
+	}{FName: "/plogs/p.log", Mess: "Log File Truncated"}
+	json.NewEncoder(rwr).Encode(ret)
+
+	models.Logger.Info("Truncate log file")
 
 }
